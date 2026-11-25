@@ -96,11 +96,13 @@ const actual = Astro.url.pathname;
         var boton = document.querySelector('[data-tema]');
         if (!boton) return;
         var texto = boton.querySelector('[data-tema-texto]');
+        var meta = document.querySelector('meta[name="theme-color"]');
         function pintar() {
           var oscuro = document.documentElement.dataset.theme === 'dark';
           boton.setAttribute('aria-pressed', oscuro ? 'true' : 'false');
           boton.setAttribute('aria-label', oscuro ? 'Cambiar a modo día' : 'Cambiar a modo noche');
           if (texto) texto.textContent = oscuro ? 'Día' : 'Noche';
+          if (meta) meta.setAttribute('content', oscuro ? '#0b1620' : '#eef4f9');
         }
         pintar();
         boton.addEventListener('click', function () {
@@ -108,6 +110,18 @@ const actual = Astro.url.pathname;
           document.documentElement.dataset.theme = siguiente;
           try { localStorage.setItem('pulso-tema', siguiente); } catch (e) {}
           pintar();
+        });
+      })();
+
+      // La luz de las tarjetas sigue al cursor (solo con ratón).
+      (function () {
+        if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+        document.querySelectorAll('.card').forEach(function (card) {
+          card.addEventListener('pointermove', function (e) {
+            var r = card.getBoundingClientRect();
+            card.style.setProperty('--mx', e.clientX - r.left + 'px');
+            card.style.setProperty('--my', e.clientY - r.top + 'px');
+          });
         });
       })();
     </script>
