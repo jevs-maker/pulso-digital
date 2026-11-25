@@ -1,0 +1,14 @@
+---
+interface Props {
+  src?: string;
+  alt: string;
+  clase?: string;
+  style?: string;
+}
+
+const { src, alt, clase = 'card-img', style } = Astro.props;
+---
+
+<div class={clase} style={style}>
+  {src && <img src={src} alt={alt} loading="lazy" decoding="async" />}
+</div>

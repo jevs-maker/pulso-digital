@@ -1,0 +1,42 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { fechaCorta } from '../../utils';
+import { secciones, nombreSeccion } from '../../data/sitio';
+import Portada from '../../components/Portada.astro';
+
+export async function getStaticPaths() {
+  return secciones.map((s) => ({ params: { categoria: s.slug } }));
+}
+
+const { categoria } = Astro.params;
+const nombre = nombreSeccion(categoria ?? '');
+const articulos = (await getCollection('articulos'))
+  .filter((a) => a.data.categoria === categoria)
+  .sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf());
+---
+
+<Base titulo={nombre} descripcion={`Todas las historias de ${nombre} en Pulso Digital.`}>
+  <section class="section" style="padding-top: 34px;">
+    <span class="kicker">Sección</span>
+    <h1 style="font-size: clamp(2rem, 3.4vw, 2.8rem); margin-top: 10px;">{nombre}</h1>
+    <p class="muted" style="margin-top: 12px; max-width: 52ch;">
+      Historias de {nombre.toLowerCase()} explicadas en cinco minutos, con datos y sin relleno.
+    </p>
+
+    <div class="grid" style="margin-top: 30px;">
+      {articulos.map((a) => (
+        <a class="card" href={`/articulo/${a.id}/`}>
+          <Portada src={a.data.imagen} alt={a.data.titulo} />
+          <span class="kicker">{nombreSeccion(a.data.categoria)}</span>
+          <h3>{a.data.titulo}</h3>
+          <p class="meta">{fechaCorta(a.data.fecha)} · {a.data.minutos} min</p>
+        </a>
+      ))}
+    </div>
+
+    {articulos.length === 0 && (
+      <p class="muted" style="margin-top: 26px;">Todavía no hay historias publicadas en esta sección.</p>
+    )}
+  </section>
+</Base>

@@ -1,0 +1,99 @@
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+
+# ─────────────────────────────────────────────────────────────
+#  Pulso Digital · panel de publicación
+#  Escribe en el repositorio de GitHub jevs-maker/pulso-digital,
+#  rama main. El acceso se hace con un token personal de GitHub:
+#  el panel lo pide una sola vez (botón «Iniciar sesión con token»)
+#  y lo guarda en este navegador. No hay servidores que mantener.
+# ─────────────────────────────────────────────────────────────
+
+backend:
+  name: github
+  repo: jevs-maker/pulso-digital
+  branch: main
+  auth_methods: [token]
+
+locale: es
+
+site_url: https://pulsodigital.pages.dev
+display_url: https://pulsodigital.pages.dev
+
+media_folder: public/imagenes
+public_folder: /imagenes
+
+collections:
+  - name: articulos
+    label: Artículos
+    label_singular: Artículo
+    description: Escribe la historia, elige su sección y súbele una foto. Al publicar, la web se actualiza sola.
+    folder: src/content/articulos
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    preview_path: articulo/{{slug}}/
+    summary: "{{titulo}}"
+    sortable_fields: [fecha, titulo]
+    view_filters:
+      - label: Destacados
+        field: destacado
+        pattern: true
+    fields:
+      - label: Titular
+        name: titulo
+        widget: string
+        hint: El título que verá el lector. Mejor entre 50 y 70 caracteres.
+      - label: Entradilla
+        name: entradilla
+        widget: text
+        hint: Una o dos frases que resumen la historia.
+      - label: Sección
+        name: categoria
+        widget: select
+        options:
+          - { label: Inteligencia artificial, value: inteligencia-artificial }
+          - { label: Tecnología, value: tecnologia }
+          - { label: Dinero digital, value: dinero-digital }
+          - { label: Tendencias, value: tendencias }
+          - { label: Guías, value: guias }
+      - label: Autor
+        name: autor
+        widget: string
+        default: Redacción
+      - label: Cargo del autor
+        name: cargo
+        widget: string
+        required: false
+        hint: Opcional. Por ejemplo, "Periodista de tecnología".
+      - label: Fecha de publicación
+        name: fecha
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: false
+        picker_utc: true
+      - label: Minutos de lectura
+        name: minutos
+        widget: number
+        value_type: int
+        default: 5
+        min: 1
+        max: 60
+      - label: Destacar en la portada
+        name: destacado
+        widget: boolean
+        default: false
+        required: false
+      - label: Foto de portada
+        name: imagen
+        widget: image
+        required: false
+        hint: Si no subes foto, la web usará un degradado azul de la marca.
+      - label: Datos clave
+        name: resumen
+        widget: list
+        required: false
+        hint: Frases cortas para el recuadro "EN CORTO". Opcional.
+      - label: Texto del artículo
+        name: body
+        widget: markdown

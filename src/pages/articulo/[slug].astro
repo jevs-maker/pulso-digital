@@ -1,0 +1,123 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { fechaLarga } from '../../utils';
+import { nombreSeccion, sitio } from '../../data/sitio';
+import Portada from '../../components/Portada.astro';
+
+export async function getStaticPaths() {
+  const articulos = await getCollection('articulos');
+  return articulos.map((a) => ({ params: { slug: a.id }, props: { articulo: a } }));
+}
+
+interface Props {
+  articulo: CollectionEntry<'articulos'>;
+}
+
+const { articulo } = Astro.props;
+const { titulo, entradilla, autor, cargo, fecha, minutos, categoria, resumen } = articulo.data;
+const { Content } = await render(articulo);
+
+const relacionados = (await getCollection('articulos'))
+  .filter((a) => a.id !== articulo.id)
+  .slice(0, 3);
+
+const masLeidos = relacionados.slice(0, 3);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'NewsArticle',
+  headline: titulo,
+  description: entradilla,
+  datePublished: fecha.toISOString(),
+  inLanguage: 'es',
+  author: { '@type': 'Person', name: autor },
+  publisher: { '@type': 'Organization', name: sitio.nombre },
+  mainEntityOfPage: `${sitio.url}/articulo/${articulo.id}/`,
+};
+---
+
+<Base titulo={titulo} descripcion={entradilla} jsonLd={jsonLd}>
+  <article class="article">
+    <div>
+      <p class="small muted">Inicio / <a href={`/categoria/${categoria}/`} style="color: var(--brand);">{nombreSeccion(categoria)}</a></p>
+      <header class="article-head">
+        <span class="kicker">{nombreSeccion(categoria)}</span>
+        <h1 class="article-title">{titulo}</h1>
+        <p class="article-lede">{entradilla}</p>
+        <div class="byline">
+          <div class="avatar"></div>
+          <div>
+            <p class="small" style="font-weight: 700;">{autor}</p>
+            <p class="tiny" style="text-transform: none; letter-spacing: 0;">{cargo ?? 'Redacción'} · {fechaLarga(fecha)} · {minutos} min de lectura</p>
+          </div>
+        </div>
+      </header>
+
+      <div class="hero-article glass">
+        <Portada src={articulo.data.imagen} alt={titulo} />
+      </div>
+
+
+      {resumen.length > 0 && (
+        <aside class="callout glass-sm">
+          <span class="kicker">En corto</span>
+          {resumen.map((punto) => (
+            <p class="small" style="font-weight: 600;">{punto}</p>
+          ))}
+        </aside>
+      )}
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      <div class="ad" style="margin: 32px 0;">Publicidad · 728 × 250 · AdSense</div>
+
+      <div class="share">
+        <span style="font-weight: 600; color: var(--text);">Compartir</span>
+        <span>Correo</span>
+        <span>Guardar</span>
+        <span>Copiar enlace</span>
+      </div>
+    </div>
+
+    <aside class="aside">
+      <div class="ad" style="min-height: 520px;">Publicidad · 300 × 600</div>
+      <div class="most glass-sm">
+        <h3 style="font-size: 1.05rem;">Lo más leído</h3>
+        <div class="most-list">
+          {masLeidos.map((a, i) => (
+            <a class="most-item" href={`/articulo/${a.id}/`}>
+              <span>{i + 1}</span>
+              <span>{a.data.titulo}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div class="panel" style="padding: 22px; background: linear-gradient(120deg, #3a6f94, #6f9fbd); border-radius: 22px; box-shadow: var(--shadow); color: #fff;">
+        <h3 style="font-size: 1.05rem; color: #fff;">Cinco historias al día</h3>
+        <p class="small" style="color: rgba(255,255,255,0.86); margin-top: 6px;">Gratis y sin spam.</p>
+        <form action="#" method="post" style="display: grid; gap: 8px; margin-top: 12px;">
+          <input class="field" style="min-width: 0; width: 100%;" type="email" placeholder="tu@correo.com" aria-label="Tu correo electrónico" required />
+          <button class="btn btn-ghost" type="submit" style="width: 100%;">Suscribirme</button>
+        </form>
+      </div>
+    </aside>
+  </article>
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Sigue leyendo</h2>
+    </div>
+    <div class="grid">
+      {relacionados.map((a) => (
+        <a class="card" href={`/articulo/${a.id}/`}>
+          <Portada src={a.data.imagen} alt={a.data.titulo} style="height: 140px;" />
+          <span class="kicker">{nombreSeccion(a.data.categoria)}</span>
+          <h3>{a.data.titulo}</h3>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>

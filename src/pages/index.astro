@@ -1,0 +1,116 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { fechaCorta } from '../utils';
+import { nombreSeccion } from '../data/sitio';
+import Portada from '../components/Portada.astro';
+
+const todos = (await getCollection('articulos')).sort(
+  (a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf()
+);
+const destacado = todos.find((a) => a.data.destacado) ?? todos[0];
+const resto = todos.filter((a) => a.id !== destacado.id);
+const dinero = todos.filter((a) => a.data.categoria === 'dinero-digital').slice(0, 4);
+const cintillo = resto[1] ?? resto[0] ?? destacado;
+---
+
+<Base>
+  <section class="hero">
+    <div class="rise">
+      <span class="pill"><span class="dot"></span>{nombreSeccion(destacado.data.categoria)} · {destacado.data.minutos} min</span>
+      <h1 class="hero-title">{destacado.data.titulo}</h1>
+      <p class="hero-lede">{destacado.data.entradilla}</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href={`/articulo/${destacado.id}/`}>Leer el análisis</a>
+        <a class="btn btn-ghost" href={`/categoria/${destacado.data.categoria}/`}>Ver la sección</a>
+      </div>
+      <p class="hero-proof">◍ 48.000 personas lo leyeron hoy</p>
+    </div>
+
+    <div class="hero-visual rise d2">
+      <a class="hero-card" href={`/articulo/${resto[0]?.id ?? destacado.id}/`}>
+        <Portada clase="hero-img" src={resto[0]?.data.imagen} alt={resto[0]?.data.titulo ?? destacado.data.titulo} />
+        <div class="hero-card-body">
+          <span class="kicker">{nombreSeccion(resto[0]?.data.categoria ?? destacado.data.categoria)}</span>
+          <h3>{resto[0]?.data.titulo ?? destacado.data.titulo}</h3>
+          <p class="tiny" style="margin-top: 8px;">Hace 2 horas · 6 min de lectura</p>
+        </div>
+      </a>
+      <div class="chips">
+        <div class="float-chip chip-a">
+          <div>
+            <p class="tiny">IA en números</p>
+            <p class="chip-num">60 %</p>
+            <p class="tiny chip-note">de los correos internos ya se redactan con IA</p>
+          </div>
+        </div>
+        <div class="float-chip chip-b">
+          <div>
+            <p class="tiny">Ahorro semanal</p>
+            <p class="chip-num">4,2 h</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ticker glass-sm rise d3">
+    <span class="now">AHORA</span>
+    <p class="small" style="font-weight: 600;">{cintillo.data.titulo}</p>
+  </div>
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Hoy en Pulso</h2>
+      <a class="small" style="color: var(--brand); font-weight: 600;" href={`/categoria/${todos[0].data.categoria}/`}>Ver todas →</a>
+    </div>
+    <div class="grid">
+      {resto.map((a, i) => (
+        <a class={`card rise d${(i % 4) + 1}`} href={`/articulo/${a.id}/`}>
+          <Portada src={a.data.imagen} alt={a.data.titulo} />
+          <span class="kicker">{nombreSeccion(a.data.categoria)}</span>
+          <h3>{a.data.titulo}</h3>
+          <p class="meta">{fechaCorta(a.data.fecha)} · {a.data.minutos} min</p>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="panel glass panel-split">
+      <div>
+        <span class="kicker">Dinero digital</span>
+        <h2 style="font-size: clamp(1.6rem, 2.6vw, 2.1rem); margin-top: 10px;">El tema que mejor paga tu tiempo</h2>
+        <p class="muted" style="margin-top: 12px; max-width: 34ch;">
+          Decisiones de dinero explicadas sin jerga, con números reales y comparativas verificadas.
+        </p>
+        <a class="btn btn-ghost" style="margin-top: 20px;" href="/categoria/dinero-digital/">Explorar la sección →</a>
+      </div>
+      <div class="rows">
+        {dinero.map((a, i) => (
+          <a class="row-link" href={`/articulo/${a.id}/`}>
+            <span class="tiny">0{i + 1} — {nombreSeccion(a.data.categoria).toUpperCase()}</span>
+            <strong style="font-size: 1.02rem; letter-spacing: -0.02em; line-height: 1.3;">{a.data.titulo}</strong>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="ad">Publicidad · 970 × 90 · AdSense</div>
+  </section>
+
+  <section class="section" id="newsletter" style="padding-top: 0;">
+    <div class="newsletter">
+      <div>
+        <h2>Cinco historias. Un análisis. Cero ruido.</h2>
+        <p>Un correo cada mañana con lo que de verdad importa. Gratis y sin spam.</p>
+      </div>
+      <form action="#" method="post">
+        <input class="field" type="email" name="email" placeholder="tu@correo.com" aria-label="Tu correo electrónico" required />
+        <button class="btn btn-ghost" type="submit">Suscribirme</button>
+      </form>
+    </div>
+  </section>
+</Base>

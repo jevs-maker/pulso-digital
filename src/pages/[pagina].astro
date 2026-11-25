@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+import { paginas, type Pagina } from '../data/paginas';
+
+export function getStaticPaths() {
+  return paginas.map((p) => ({ params: { pagina: p.slug }, props: { pagina: p } }));
+}
+
+interface Props {
+  pagina: Pagina;
+}
+
+const { pagina } = Astro.props;
+---
+
+<Base titulo={pagina.titulo} descripcion={pagina.cuerpo[0]}>
+  <section class="section" style="padding-top: 34px; max-width: 72ch;">
+    <span class="kicker">Pulso Digital</span>
+    <h1 style="font-size: clamp(2rem, 3.2vw, 2.6rem); margin-top: 10px;">{pagina.titulo}</h1>
+    <div class="prose">
+      {pagina.cuerpo.map((parrafo) => <p>{parrafo}</p>)}
+    </div>
+  </section>
+</Base>
